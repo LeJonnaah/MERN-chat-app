@@ -1,16 +1,23 @@
 import { FormControl, FormLabel, VStack, Input, InputGroup, InputRightElement, Button } from '@chakra-ui/react'
 import React, { useState } from 'react'
+import { useToast } from '@chakra-ui/react'
+import axios from 'axios'
+import { useHistory } from 'react-router-dom'
 
 export default function Register() {
 
-  const [Name, setName] = useState('')
-  const [Email, setEmail] = useState('')
-  const [Password, setPassword] = useState('')
-  const [ConfirmPassword, setConfirmPassword] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [Error, setError] = useState('')
   const [Loading, setLoading] = useState(false)
   const [picture, setPicture] = useState()
+  const [pic, setPic] = useState()
+  const [picLoading, setPicLoading] = useState(false)
   const [show, setShow] = useState(false)
+  const history = useHistory()
+  const toast = useToast()
 
   const handleClick = () => setShow(!show)
 
@@ -27,29 +34,67 @@ export default function Register() {
     }
   }
 
-  const submitHandler = async (e) => {
-    e.preventDefault()
-
-    if (Password !== ConfirmPassword) {
-      return setError('Passwords do not match')
+  const submitHandler = async () => {
+    setPicLoading(true);
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        title: "Please Fill all the Feilds",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setPicLoading(false);
+      return;
     }
-
+    if (password !== confirmPassword) {
+      toast({
+        title: "Passwords Do Not Match",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
     try {
-      const data = new FormData()
-      data.append('file', picture)
-      data.append('upload_preset', 'mern-chat-app')
-      data.append('cloud_name', 'mern-chat-app')
-      setLoading(true)
-      const res = await fetch('https://api.cloudinary.com/v1_1/mern-chat-app/image/upload', {
-        method: 'post',
-        body: data
-      })
-      const file = await res.json()
-      const { url } = file
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
+      const { data } = await axios.post(
+        "/api/user",
+        {
+          name,
+          email,
+          password,
+          pic,
+        },
+        config
+      );
+      toast({
+        title: "Registration Successful",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setPicLoading(false);
+      history.push("/chats");
     } catch (error) {
-      console.log(error)
+      toast({
+        title: "Error Occured!",
+        description: error.response.data.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setPicLoading(false);
     }
-  }
+  };
 
   return (
     <VStack spacing={5} color='white'>
@@ -58,7 +103,7 @@ export default function Register() {
         <Input
           type='text'
           placeholder='Enter your username'
-          value={Name}
+          value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </FormControl>
@@ -67,7 +112,7 @@ export default function Register() {
         <Input
           type='email'
           placeholder='Enter your email'
-          value={Email}
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </FormControl>
@@ -77,7 +122,7 @@ export default function Register() {
           <Input
             type={show ? "text" : 'password'}
             placeholder='Enter your password'
-            value={Password}
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </FormControl>
@@ -92,7 +137,7 @@ export default function Register() {
         <Input
           type='password'
           placeholder='Confirm your password'
-          value={ConfirmPassword}
+          value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </FormControl>
