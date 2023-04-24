@@ -1,17 +1,17 @@
 import { ViewIcon } from "@chakra-ui/icons";
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Button,
-  useDisclosure,
-  IconButton,
-  Text,
-  Image,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    Button,
+    useDisclosure,
+    IconButton,
+    Text,
+    Image,
 } from "@chakra-ui/react";
 
 export default function ProfileModal({ user, children }) {
@@ -50,7 +50,6 @@ export default function ProfileModal({ user, children }) {
                         />
                         <Text
                             fontSize={{ base: "28px", md: "30px" }}
-                            fontFamily="Work sans"
                         >
                             Email: {user.email}
                         </Text>
@@ -60,7 +59,6 @@ export default function ProfileModal({ user, children }) {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </>odal >
         </>
     )
 }
