@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Box, Stack, Text } from "@chakra-ui/layout";
 import { Button } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
-// import GroupChatModal from './misc/GroupChatModal';
+import GroupChatModal from './misc/GroupChatModal';
 import ChatLoading from './ChatLoading';
 import {getSender} from '../config/ChatLogics';
 
@@ -66,7 +66,7 @@ export default function MyChats() {
         alignItems="center"
       >
         My Chats
-        {/* <GroupChatModal> */}
+        <GroupChatModal>
           <Button
             d="flex"
             fontSize={{ base: "17px", md: "10px", lg: "17px" }}
@@ -74,7 +74,7 @@ export default function MyChats() {
           >
             New Group Chat
           </Button>
-        {/* </GroupChatModal> */}
+        </GroupChatModal>
       </Box>
       <Box
         d="flex"

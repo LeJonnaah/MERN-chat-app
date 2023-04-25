@@ -13,7 +13,7 @@ import { DrawerContent, DrawerHeader, DrawerOverlay, DrawerBody } from '@chakra-
 import { useToast } from '@chakra-ui/toast';
 import axios from 'axios';
 import ChatLoading from '../ChatLoading';
-import UserListItem from '../UserAvatar/UserListItem';
+import UserListItem from '../UserProfile/UserListItem';
 import { Spinner } from '@chakra-ui/spinner';
 
 export default function SideDrawer() {
