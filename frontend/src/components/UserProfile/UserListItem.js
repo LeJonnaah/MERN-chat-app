@@ -16,7 +16,7 @@ export default function UserListItem({ user,  handleFunction }) {
                 color: "white",
             }}
             w="100%"
-            d="flex"
+            display="flex"
             alignItems="center"
             color="black"
             px={3}
