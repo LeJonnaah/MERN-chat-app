@@ -22,6 +22,8 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState();
     const [socketConnected, setSocketConnected] = useState(false);
+    const [typing, setTyping] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
     const toast = useToast();
 
     const fetchMessages = async () => {
@@ -46,7 +48,7 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
             socket.emit("join chat", selectedChat._id);
         } catch (error) {
             toast({
-                title: "Error Occured!",
+                title: "Error Occurred!",
                 description: "Failed to Load the Messages",
                 status: "error",
                 duration: 5000,
@@ -57,24 +59,9 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
     };
 
 
-    useEffect(() => {
-        fetchMessages();
-
-        selectedChatCompare = selectedChat;
-    }, [selectedChat]);
-
-    useEffect(() => {
-        socket = io(ENDPOINT);
-
-        socket.emit('setup', user);
-
-        socket.on('connected', () => {
-            setSocketConnected(true);
-        });
-    }, []);
-
     const sendMessage = async (e) => {
         if (e.key === "Enter" && !e.shiftKey && newMessage) {
+            socket.emit('stop typing', selectedChat._id);
             try {
                 const config = {
                     headers: {
@@ -84,15 +71,16 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
                 };
 
                 setNewMessage("");
-
+                
                 const { data } = await axios.post(
                     "/api/message", {
                     content: newMessage,
                     chatId: selectedChat
                 }, config
                 );
-
-
+                
+                
+                socket.emit("new message", data);
                 setMessages([...messages, data]);
 
             } catch (error) {
@@ -107,9 +95,62 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
         }
     }
 
+    useEffect(() => {
+        socket = io(ENDPOINT);
+
+        socket.emit('setup', user);
+
+        socket.on('connected', () => {
+            setSocketConnected(true);
+        });
+
+        socket.on('typing', () => {
+            setIsTyping(true);
+        });
+        socket.on('stop typing', () => {
+            setIsTyping(false);
+        });
+
+    }, []);
+
+    useEffect(() => {
+        fetchMessages();
+
+        selectedChatCompare = selectedChat;
+    }, [selectedChat]);
+
+
+    useEffect(() => {
+        socket.on('message received', (newMessageReceived) => {
+            if(!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
+
+            } else {
+                setMessages([...messages, newMessageReceived]);
+            }
+        });
+    });
+
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
 
+        if (!socketConnected) return;
+
+        if (!typing) {
+            setTyping(true);
+            socket.emit('typing', selectedChat._id);
+        } 
+
+        let lastTypingTime = new Date().getTime();
+
+        setTimeout(() => {
+            let typingTimer = new Date().getTime();
+            let timeDiff = typingTimer - lastTypingTime;
+
+            if (timeDiff >= 3000 && typing) {
+                socket.emit('stop typing', selectedChat._id);
+                setTyping(false);
+            }
+        }, 3000);
     }
 
     return (
@@ -153,7 +194,7 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
                         overflow="hidden"
                         bg="gray.200"
                     >
-                        {!loading ? (
+                        {loading ? (
                             <Spinner
                                 size="xl"
                                 w={20}
@@ -171,6 +212,7 @@ export default function SingleChat({ fetchAgain, setFetchAgain }) {
                             isRequired
                             mt={3}
                         >
+                            {isTyping ? <div>Loading</div> : <></>}
                             <Input
                                 variant="filled"
                                 placeholder="Type a message"
