@@ -15,6 +15,7 @@ import axios from 'axios';
 import ChatLoading from '../ChatLoading';
 import UserListItem from '../UserProfile/UserListItem';
 import { Spinner } from '@chakra-ui/spinner';
+import { getSender } from '../../config/ChatLogics';
 
 export default function SideDrawer() {
     const [search, setSearch] = useState("");
@@ -22,7 +23,7 @@ export default function SideDrawer() {
     const [loading, setLoading] = useState(false);
     const [loadingChat, setLoadingChat] = useState();
 
-    const { user, setSelectedChat, chats, setChats } = ChatState();
+    const { user, setSelectedChat, chats, setChats, notification, setNotification } = ChatState();
     const toast = useToast();
     const history = useHistory();
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -66,7 +67,6 @@ export default function SideDrawer() {
         }
     }
     const accessChat = async (userId) => {
-        console.log(userId);
 
         try {
             setLoadingChat(true);
@@ -119,7 +119,22 @@ export default function SideDrawer() {
                         <MenuButton p={1}>
                             <BellIcon fontSize="2xl" m={1} />
                         </MenuButton>
-                        {/* <MenuList>  </MenuList> */}
+                        <MenuList pl={2}>
+                            {!notification.length && "No New Messages"}
+                            {notification.map((notif) => (
+                                <MenuItem
+                                    key={notif._id}
+                                    onClick={() => {
+                                        setSelectedChat(notif.chat);
+                                        setNotification(notification.filter((n) => n !== notif));
+                                    }}
+                                >
+                                    {notif.chat.isGroupChat
+                                        ? `New Message in ${notif.chat.chatName}`
+                                        : `New Message from ${getSender(user, notif.chat.users)}`}
+                                </MenuItem>
+                            ))}
+                        </MenuList>
                     </Menu>
                     <Menu>
                         <MenuButton
